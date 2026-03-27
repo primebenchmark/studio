@@ -26,13 +26,14 @@ function sanitizeUrl(url) {
 }
 
 // ── Card config ────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'welcome-config';
+const STORAGE_KEY = 'welcome-config-v2';
 const DEFAULT_CARDS = [
   { label: 'Kanji Studio', href: 'kanji-studio.php' },
-  { label: 'Image Studio', href: 'index.html' },
+  { label: 'Image Studio', href: 'image-studio.php' },
+  { label: 'Collage Studio', href: 'collage-studio.php' },
 ];
 const DEFAULTS = {
-  numCards: 2,
+  numCards: 3,
   layout: 'column',
   cardWidth: 260,
   cardHeight: 120,
