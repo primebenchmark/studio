@@ -1,9 +1,21 @@
+<?php
+define('STUDIO_AUTH', 1);
+require __DIR__ . '/auth/config.php';
+require __DIR__ . '/auth/session.php';
+
+studioSessionStart();
+ensureCsrf();
+
+$authed  = isAuthenticated();
+$csrf    = $_SESSION[CSRF_FIELD];
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Studio</title>
+  <meta name="csrf-token" content="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -247,12 +259,12 @@
 
   <!-- Page controls (top-right) -->
   <div class="page-controls">
-    <a href="admin.html" class="admin-link">⚙ Admin</a>
+    <a href="admin.php" class="admin-link">⚙ Admin</a>
     <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme"></button>
   </div>
 
   <!-- PIN SCREEN -->
-  <div id="pin-screen">
+  <div id="pin-screen"<?= $authed ? ' style="display:none"' : '' ?>>
     <h2>Enter PIN</h2>
     <div class="pin-dots" id="pin-dots">
       <div class="pin-dot" id="d0"></div>
@@ -278,173 +290,10 @@
   </div>
 
   <!-- MAIN SCREEN (shown after correct PIN) -->
-  <div id="main-screen">
+  <div id="main-screen"<?= $authed ? ' style="display:flex"' : '' ?>>
     <div class="cards" id="cards-container"></div>
   </div>
 
-  <script>
-    // ---- Theme ----
-    const THEME_KEY = 'welcome-theme';
-    const html = document.documentElement;
-
-    function applyTheme(t) {
-      html.setAttribute('data-theme', t);
-      try { localStorage.setItem(THEME_KEY, t); } catch {}
-    }
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      applyTheme(next);
-    });
-
-    const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) || 'light'; } catch { return 'light'; } })();
-    applyTheme(savedTheme);
-
-    // ---- Card config ----
-    const STORAGE_KEY = 'welcome-config';
-    const DEFAULT_CARDS = [
-      { label: 'Kanji Studio', href: '#' },
-      { label: 'Image Studio', href: 'index.html' },
-    ];
-    const DEFAULTS = {
-      numCards: 2,
-      layout: 'column',
-      cardWidth: 260,
-      cardHeight: 120,
-      cards: DEFAULT_CARDS,
-    };
-
-    function loadConfig() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
-      } catch {}
-      return { ...DEFAULTS };
-    }
-
-    function buildCards() {
-      const cfg = loadConfig();
-      const container = document.getElementById('cards-container');
-      container.innerHTML = '';
-
-      // Layout
-      const layout = cfg.layout || 'column';
-      if (layout === 'column') {
-        container.style.display = 'flex';
-        container.style.flexDirection = 'column';
-        container.style.flexWrap = 'nowrap';
-        container.style.gap = '16px';
-      } else if (layout === 'row') {
-        container.style.display = 'flex';
-        container.style.flexDirection = 'row';
-        container.style.flexWrap = 'nowrap';
-        container.style.gap = '16px';
-      } else if (layout === 'grid-2') {
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(2, auto)';
-        container.style.gap = '16px';
-      } else if (layout === 'grid-3') {
-        container.style.display = 'grid';
-        container.style.gridTemplateColumns = 'repeat(3, auto)';
-        container.style.gap = '16px';
-      }
-
-      const cards = (cfg.cards || DEFAULT_CARDS).slice(0, cfg.numCards || DEFAULT_CARDS.length);
-      const gw = cfg.cardWidth || 260;
-      const gh = cfg.cardHeight || 120;
-
-      cards.forEach(card => {
-        const a = document.createElement('a');
-        a.className = 'card';
-        a.href = card.href || '#';
-        a.textContent = card.label || '';
-        a.style.width = (card.width || gw) + 'px';
-        a.style.height = (card.height || gh) + 'px';
-        container.appendChild(a);
-      });
-    }
-
-    buildCards();
-
-    // ---- PIN ----
-    const CORRECT = "9963";
-    let entered = "";
-
-    const dots = [0,1,2,3].map(i => document.getElementById("d" + i));
-    const errorMsg = document.getElementById("pin-error");
-    const pinScreen = document.getElementById("pin-screen");
-    const mainScreen = document.getElementById("main-screen");
-    const pinDots = document.getElementById("pin-dots");
-
-    function updateDots() {
-      dots.forEach((d, i) => {
-        d.classList.toggle("filled", i < entered.length);
-        d.classList.remove("error");
-      });
-    }
-
-    function showError() {
-      dots.forEach(d => { d.classList.remove("filled"); d.classList.add("error"); });
-      pinDots.classList.add("shake");
-      errorMsg.textContent = "Incorrect PIN";
-      pinDots.addEventListener("animationend", () => {
-        pinDots.classList.remove("shake");
-        dots.forEach(d => d.classList.remove("error"));
-        errorMsg.textContent = "";
-      }, { once: true });
-    }
-
-    function unlock() {
-      pinScreen.style.display = "none";
-      mainScreen.style.display = "flex";
-    }
-
-    document.getElementById("pin-pad").addEventListener("click", e => {
-      const btn = e.target.closest(".pin-btn");
-      if (!btn) return;
-
-      if (btn.id === "pin-delete") {
-        entered = entered.slice(0, -1);
-        updateDots();
-        return;
-      }
-
-      const n = btn.dataset.n;
-      if (n === undefined || entered.length >= 4) return;
-
-      entered += n;
-      updateDots();
-
-      if (entered.length === 4) {
-        if (entered === CORRECT) {
-          setTimeout(unlock, 120);
-        } else {
-          setTimeout(() => {
-            showError();
-            entered = "";
-            updateDots();
-          }, 120);
-        }
-      }
-    });
-
-    document.addEventListener("keydown", e => {
-      if (mainScreen.style.display === "flex") return;
-      if (e.key >= "0" && e.key <= "9" && entered.length < 4) {
-        entered += e.key;
-        updateDots();
-        if (entered.length === 4) {
-          if (entered === CORRECT) {
-            setTimeout(unlock, 120);
-          } else {
-            setTimeout(() => { showError(); entered = ""; updateDots(); }, 120);
-          }
-        }
-      } else if (e.key === "Backspace") {
-        entered = entered.slice(0, -1);
-        updateDots();
-      }
-    });
-  </script>
+  <script src="js/welcome.js" defer></script>
 </body>
 </html>
