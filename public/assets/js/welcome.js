@@ -4,6 +4,8 @@ const html = document.documentElement;
 
 function applyTheme(t) {
   html.setAttribute('data-theme', t);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = t === 'dark' ? '☀️' : '🌙';
   try { localStorage.setItem(THEME_KEY, t); } catch {}
 }
 
@@ -26,7 +28,7 @@ function sanitizeUrl(url) {
 // ── Card config ────────────────────────────────────────────────────────────
 const STORAGE_KEY = 'welcome-config';
 const DEFAULT_CARDS = [
-  { label: 'Kanji Studio', href: '#' },
+  { label: 'Kanji Studio', href: 'kanji-studio.php' },
   { label: 'Image Studio', href: 'index.html' },
 ];
 const DEFAULTS = {
@@ -48,6 +50,7 @@ function loadConfig() {
 function buildCards() {
   const cfg = loadConfig();
   const container = document.getElementById('cards-container');
+  if (!container) return;
   container.innerHTML = '';
 
   const layout = cfg.layout || 'column';
@@ -174,7 +177,7 @@ pinPad.addEventListener('click', e => {
 });
 
 document.addEventListener('keydown', e => {
-  if (mainScreen.style.display === 'flex' || submitting) return;
+  if ((mainScreen && mainScreen.style.display === 'flex') || submitting) return;
   if (e.key >= '0' && e.key <= '9' && entered.length < 4) {
     entered += e.key;
     updateDots();

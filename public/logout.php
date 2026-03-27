@@ -1,11 +1,12 @@
 <?php
 define('STUDIO_AUTH', 1);
-require __DIR__ . '/../src/config.php';
-require __DIR__ . '/../src/session.php';
+require __DIR__ . '/../studio_src/config.php';
+require __DIR__ . '/../studio_src/session.php';
 
 studioSessionStart();
 
 header('Content-Type: application/json; charset=utf-8');
+header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store, no-cache');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

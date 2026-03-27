@@ -1,8 +1,8 @@
 <?php
 define('STUDIO_AUTH', 1);
-require __DIR__ . '/../src/config.php';
-require __DIR__ . '/../src/session.php';
-require __DIR__ . '/../src/rate_limit.php';
+require __DIR__ . '/../studio_src/config.php';
+require __DIR__ . '/../studio_src/session.php';
+require __DIR__ . '/../studio_src/rate_limit.php';
 
 studioSessionStart();
 
@@ -45,6 +45,8 @@ rlCleanup(); // opportunistic stale-file cleanup
 
 $lockedFor = rlLockedFor($ip);
 if ($lockedFor > 0) {
+    http_response_code(429);
+    header('Retry-After: ' . $lockedFor);
     echo json_encode(['ok' => false, 'error' => 'locked', 'retry_after' => $lockedFor]);
     exit;
 }
@@ -73,6 +75,8 @@ if (password_verify($pin, getPinHash())) {
     rlRecordFailure($ip);
     $remaining = rlLockedFor($ip);
     if ($remaining > 0) {
+        http_response_code(429);
+        header('Retry-After: ' . $remaining);
         echo json_encode(['ok' => false, 'error' => 'locked', 'retry_after' => $remaining]);
     } else {
         echo json_encode(['ok' => false, 'error' => 'invalid']);

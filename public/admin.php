@@ -1,10 +1,14 @@
 <?php
 define('STUDIO_AUTH', 1);
-require __DIR__ . '/../src/config.php';
-require __DIR__ . '/../src/session.php';
+require __DIR__ . '/../studio_src/config.php';
+require __DIR__ . '/../studio_src/session.php';
 
 studioSessionStart();
 ensureCsrf();
+
+header('X-Frame-Options: DENY');
+header('X-Content-Type-Options: nosniff');
+header('Referrer-Policy: same-origin');
 
 $authed = isAuthenticated();
 $csrf   = $_SESSION[CSRF_FIELD];
@@ -112,33 +116,30 @@ $csrf   = $_SESSION[CSRF_FIELD];
     .back-link:hover { color: var(--text); }
 
     /* Theme toggle */
+    .page-controls {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 1001;
+    }
+
     .theme-toggle {
-      width: 42px;
-      height: 24px;
-      border-radius: 12px;
-      border: 1.5px solid var(--input-border);
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
       background: var(--input-bg);
       cursor: pointer;
-      position: relative;
+      font-size: 16px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background 0.2s, border-color 0.2s;
     }
-    .theme-toggle::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: var(--accent);
-      transition: transform 0.2s ease;
-    }
-    [data-theme="dark"] .theme-toggle::after {
-      transform: translateX(18px);
-    }
-    .theme-label {
-      font-size: 12px;
-      color: var(--muted);
+    .theme-toggle:hover {
+      background: var(--btn-secondary-bg);
+      border-color: var(--btn-secondary-border);
     }
 
     /* Panel */
@@ -451,6 +452,11 @@ $csrf   = $_SESSION[CSRF_FIELD];
   </style>
 </head>
 <body>
+  <!-- Theme toggle — always in DOM so JS can find it regardless of auth state -->
+  <div class="page-controls">
+    <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">🌙</button>
+  </div>
+
   <!-- PIN OVERLAY — hidden server-side when already authenticated -->
   <div id="pin-overlay"<?= $authed ? ' class="hidden"' : '' ?>>
     <div id="pin-screen">
@@ -485,8 +491,6 @@ $csrf   = $_SESSION[CSRF_FIELD];
       <h1>Welcome Screen Admin</h1>
       <div class="header-actions">
         <a href="index.php" class="back-link">← Preview</a>
-        <span class="theme-label" id="theme-label">Light</span>
-        <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme"></button>
       </div>
     </header>
 

@@ -17,14 +17,13 @@ const DEFAULTS = {
 // ── Theme ──────────────────────────────────────────────────────────────────
 const html = document.documentElement;
 const themeToggle = document.getElementById('theme-toggle');
-const themeLabel  = document.getElementById('theme-label');
 
 function applyTheme(t) {
   html.setAttribute('data-theme', t);
-  themeLabel.textContent = t === 'dark' ? 'Dark' : 'Light';
+  if (themeToggle) themeToggle.textContent = t === 'dark' ? '☀️' : '🌙';
 }
 
-themeToggle.addEventListener('click', () => {
+if (themeToggle) themeToggle.addEventListener('click', () => {
   const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   applyTheme(next);
   try { localStorage.setItem('admin-theme', next); } catch {}
