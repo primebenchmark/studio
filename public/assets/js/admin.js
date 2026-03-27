@@ -69,6 +69,13 @@ function sanitizeUrl(url) {
   return s;
 }
 
+// Debounce helper to avoid excessive DOM updates during rapid typing
+let _previewTimer = null;
+function debouncedPreview() {
+  clearTimeout(_previewTimer);
+  _previewTimer = setTimeout(updatePreview, 60);
+}
+
 // ── Render card editors ────────────────────────────────────────────────────
 function renderCards() {
   const n = clamp(parseInt(numCardsInput.value) || 2, 1, 12);
@@ -107,38 +114,6 @@ function renderCards() {
     cardsList.appendChild(el);
   }
 
-  cardsList.querySelectorAll('.f-label').forEach(inp => {
-    inp.addEventListener('input', e => { config.cards[+e.target.dataset.i].label = e.target.value; updatePreview(); });
-  });
-  cardsList.querySelectorAll('.f-href').forEach(inp => {
-    inp.addEventListener('input', e => { config.cards[+e.target.dataset.i].href = sanitizeUrl(e.target.value); });
-  });
-  cardsList.querySelectorAll('.f-width').forEach(inp => {
-    inp.addEventListener('input', e => {
-      const v = parseInt(e.target.value);
-      if (isNaN(v)) delete config.cards[+e.target.dataset.i].width;
-      else config.cards[+e.target.dataset.i].width = v;
-      updatePreview();
-    });
-  });
-  cardsList.querySelectorAll('.f-height').forEach(inp => {
-    inp.addEventListener('input', e => {
-      const v = parseInt(e.target.value);
-      if (isNaN(v)) delete config.cards[+e.target.dataset.i].height;
-      else config.cards[+e.target.dataset.i].height = v;
-      updatePreview();
-    });
-  });
-  cardsList.querySelectorAll('.remove-card').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const i = +e.currentTarget.dataset.i;
-      config.cards.splice(i, 1);
-      numCardsInput.value = config.cards.length;
-      renderCards();
-      updatePreview();
-    });
-  });
-
   updatePreview();
 }
 
@@ -153,6 +128,7 @@ function updatePreview() {
 
   previewStrip.innerHTML = '';
   const scale = 0.55;
+  const frag = document.createDocumentFragment();
   config.cards.forEach(card => {
     const cw = (card.width || w) * scale;
     const ch = (card.height || h) * scale;
@@ -161,9 +137,46 @@ function updatePreview() {
     div.style.width = cw + 'px';
     div.style.height = ch + 'px';
     div.textContent = card.label || '—';
-    previewStrip.appendChild(div);
+    frag.appendChild(div);
   });
+  previewStrip.appendChild(frag);
 }
+
+// ── Admin UI — only present when authenticated ─────────────────────────────
+if (cardsList) {
+
+// ── Card list event delegation (single listener instead of per-element) ───
+cardsList.addEventListener('input', e => {
+  const t = e.target;
+  const i = +t.dataset.i;
+  if (isNaN(i) || !config.cards[i]) return;
+
+  if (t.classList.contains('f-label')) {
+    config.cards[i].label = t.value;
+    debouncedPreview();
+  } else if (t.classList.contains('f-href')) {
+    config.cards[i].href = sanitizeUrl(t.value);
+  } else if (t.classList.contains('f-width')) {
+    const v = parseInt(t.value);
+    if (isNaN(v)) delete config.cards[i].width;
+    else config.cards[i].width = v;
+    debouncedPreview();
+  } else if (t.classList.contains('f-height')) {
+    const v = parseInt(t.value);
+    if (isNaN(v)) delete config.cards[i].height;
+    else config.cards[i].height = v;
+    debouncedPreview();
+  }
+});
+
+cardsList.addEventListener('click', e => {
+  const btn = e.target.closest('.remove-card');
+  if (!btn) return;
+  const i = +btn.dataset.i;
+  config.cards.splice(i, 1);
+  numCardsInput.value = config.cards.length;
+  renderCards();
+});
 
 // ── Populate from config ───────────────────────────────────────────────────
 function populate() {
@@ -176,8 +189,8 @@ function populate() {
 
 numCardsInput.addEventListener('change', () => { config.numCards = parseInt(numCardsInput.value) || 2; renderCards(); });
 layoutSelect.addEventListener('change', () => { config.layout = layoutSelect.value; updatePreview(); });
-cardWidthInput.addEventListener('input', () => { config.cardWidth = parseInt(cardWidthInput.value) || 260; updatePreview(); });
-cardHeightInput.addEventListener('input', () => { config.cardHeight = parseInt(cardHeightInput.value) || 120; updatePreview(); });
+cardWidthInput.addEventListener('input', () => { config.cardWidth = parseInt(cardWidthInput.value) || 260; debouncedPreview(); });
+cardHeightInput.addEventListener('input', () => { config.cardHeight = parseInt(cardHeightInput.value) || 120; debouncedPreview(); });
 
 document.getElementById('btn-save').addEventListener('click', () => {
   config.numCards   = parseInt(numCardsInput.value) || 2;
@@ -197,6 +210,8 @@ document.getElementById('btn-reset').addEventListener('click', () => {
 });
 
 populate();
+
+} // end if (cardsList)
 
 // ── PIN ── (server-side validation via fetch) ──────────────────────────────
 (function() {

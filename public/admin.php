@@ -9,6 +9,7 @@ ensureCsrf();
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $authed = isAuthenticated();
 $csrf   = $_SESSION[CSRF_FIELD];
@@ -114,6 +115,26 @@ $csrf   = $_SESSION[CSRF_FIELD];
       transition: color 0.15s;
     }
     .back-link:hover { color: var(--text); }
+
+    .logout-btn {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 8px;
+      border: 1px solid var(--input-border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .logout-btn:hover {
+      background: var(--danger-light);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
 
     /* Theme toggle */
     .page-controls {
@@ -491,6 +512,10 @@ $csrf   = $_SESSION[CSRF_FIELD];
       <h1>Welcome Screen Admin</h1>
       <div class="header-actions">
         <a href="index.php" class="back-link">← Preview</a>
+        <button class="logout-btn" id="logout-btn" title="Log out" aria-label="Log out">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Log out
+        </button>
       </div>
     </header>
 
@@ -545,5 +570,16 @@ $csrf   = $_SESSION[CSRF_FIELD];
   <?php endif; ?>
 
   <script src="assets/js/admin.js" defer></script>
+  <script>
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      const csrf = document.querySelector('meta[name="csrf-token"]').content;
+      await fetch('logout.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csrf })
+      });
+      location.href = 'index.php';
+    });
+  </script>
 </body>
 </html>

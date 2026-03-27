@@ -24,6 +24,9 @@ define('CSRF_FIELD',        '_csrf');
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function getPinHash(): string {
+    static $cached = null;
+    if ($cached !== null) return $cached;
+
     if (!file_exists(PIN_HASH_FILE)) {
         http_response_code(503);
         exit('Studio is not configured. Please run setup.php first.');
@@ -33,6 +36,7 @@ function getPinHash(): string {
         http_response_code(503);
         exit('PIN hash file is empty. Please run setup.php again.');
     }
+    $cached = $hash;
     return $hash;
 }
 

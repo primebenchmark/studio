@@ -76,6 +76,9 @@ function rlReset(string $ip): void {
  * Called opportunistically on login attempts to avoid accumulation.
  */
 function rlCleanup(): void {
+    // Run cleanup only ~10% of the time to avoid glob() on every login attempt
+    if (random_int(1, 10) !== 1) return;
+
     $dir = RATE_LIMIT_DIR;
     if (!is_dir($dir)) return;
     $cutoff = time() - (LOCKOUT_SECONDS * 2);

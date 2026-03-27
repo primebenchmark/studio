@@ -1,6 +1,12 @@
 # Disable directory listing
 Options -Indexes
 
+# Clean URL routing
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^admin/?$ admin.php [L,QSA]
+</IfModule>
+
 # Security headers
 <IfModule mod_headers.c>
     Header always set X-Content-Type-Options "nosniff"
@@ -8,6 +14,16 @@ Options -Indexes
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
     Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+</IfModule>
+
+# Cache static assets (JS, CSS, images) for 1 week
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/javascript "access plus 1 week"
+    ExpiresByType text/css "access plus 1 week"
+    ExpiresByType image/png "access plus 1 week"
+    ExpiresByType image/jpeg "access plus 1 week"
+    ExpiresByType image/svg+xml "access plus 1 week"
 </IfModule>
 
 # Prevent access to hidden files

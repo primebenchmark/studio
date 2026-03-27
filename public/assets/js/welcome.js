@@ -78,6 +78,7 @@ function buildCards() {
   const gw = cfg.cardWidth || 260;
   const gh = cfg.cardHeight || 120;
 
+  const frag = document.createDocumentFragment();
   cards.forEach(card => {
     const a = document.createElement('a');
     a.className = 'card';
@@ -85,8 +86,9 @@ function buildCards() {
     a.textContent = card.label || '';
     a.style.width = (card.width || gw) + 'px';
     a.style.height = (card.height || gh) + 'px';
-    container.appendChild(a);
+    frag.appendChild(a);
   });
+  container.appendChild(frag);
 }
 
 buildCards();

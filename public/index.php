@@ -9,6 +9,7 @@ ensureCsrf();
 header('X-Frame-Options: DENY');
 header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $authed  = isAuthenticated();
 $csrf    = $_SESSION[CSRF_FIELD];
@@ -84,14 +85,26 @@ $csrf    = $_SESSION[CSRF_FIELD];
       gap: 8px;
     }
 
-    .admin-link {
-      font-size: 11px;
+    .logout-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s;
       color: var(--muted);
-      text-decoration: none;
-      opacity: 0.6;
-      transition: opacity 0.15s;
     }
-    .admin-link:hover { opacity: 1; }
+    .logout-btn:hover {
+      background: var(--btn-hover-bg);
+      border-color: var(--btn-hover-border);
+      color: var(--text);
+    }
 
     .theme-toggle {
       width: 32px;
@@ -257,7 +270,11 @@ $csrf    = $_SESSION[CSRF_FIELD];
 
   <!-- Page controls (top-right) -->
   <div class="page-controls">
-    <a href="admin.php" class="admin-link">⚙ Admin</a>
+<?php if ($authed): ?>
+    <button class="logout-btn" id="logout-btn" title="Log out" aria-label="Log out">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    </button>
+    <?php endif; ?>
     <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">🌙</button>
   </div>
 
@@ -295,5 +312,18 @@ $csrf    = $_SESSION[CSRF_FIELD];
   <?php endif; ?>
 
   <script src="assets/js/welcome.js" defer></script>
+  <?php if ($authed): ?>
+  <script>
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      const csrf = document.querySelector('meta[name="csrf-token"]').content;
+      await fetch('logout.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ csrf })
+      });
+      location.href = 'index.php';
+    });
+  </script>
+  <?php endif; ?>
 </body>
 </html>
