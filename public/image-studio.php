@@ -511,6 +511,9 @@ if (!isAuthenticated()) {
                 <button className="theme-toggle-btn" onClick={clearCache} title="Clear all saved preferences and reload">
                   {"\uD83D\uDDD1\uFE0F"}
                 </button>
+                <a href="/" className="theme-toggle-btn" title="Back to homepage" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  {"\uD83C\uDFE0"}
+                </a>
               </div>
             </div>
           </div>

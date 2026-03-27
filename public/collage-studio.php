@@ -920,6 +920,9 @@ if (!isAuthenticated()) {
                 <button className="theme-toggle-btn" onClick={() => { setClearConfirmText(""); setShowClearModal(true); }} title="Clear all saved preferences">
                   🗑️
                 </button>
+                <a href="/" className="theme-toggle-btn" title="Back to homepage" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  🏠
+                </a>
               </div>
 
               {showClearModal && (
