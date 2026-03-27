@@ -230,7 +230,7 @@ populate();
   }
 
   function unlock() {
-    overlay.classList.add('hidden');
+    window.location.reload();
   }
 
   async function handlePinSubmit() {

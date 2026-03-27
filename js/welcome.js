@@ -119,8 +119,7 @@ function showError(msg) {
 }
 
 function unlock() {
-  pinScreen.style.display = 'none';
-  mainScreen.style.display = 'flex';
+  window.location.reload();
 }
 
 async function handlePinSubmit() {

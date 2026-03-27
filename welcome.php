@@ -289,10 +289,12 @@ $csrf    = $_SESSION[CSRF_FIELD];
     </div>
   </div>
 
-  <!-- MAIN SCREEN (shown after correct PIN) -->
-  <div id="main-screen"<?= $authed ? ' style="display:flex"' : '' ?>>
+  <!-- MAIN SCREEN (only rendered server-side when authenticated) -->
+  <?php if ($authed): ?>
+  <div id="main-screen" style="display:flex">
     <div class="cards" id="cards-container"></div>
   </div>
+  <?php endif; ?>
 
   <script src="js/welcome.js" defer></script>
 </body>

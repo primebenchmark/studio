@@ -479,6 +479,7 @@ $csrf   = $_SESSION[CSRF_FIELD];
     </div>
   </div>
 
+  <?php if ($authed): ?>
   <div class="container">
     <header>
       <h1>Welcome Screen Admin</h1>
@@ -536,6 +537,8 @@ $csrf   = $_SESSION[CSRF_FIELD];
       </div>
     </div>
   </div>
+
+  <?php endif; ?>
 
   <script src="js/admin.js" defer></script>
 </body>
