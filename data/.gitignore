@@ -1,0 +1,5 @@
+# PIN hash — never commit credentials
+pin.hash
+
+# Rate-limit state files
+ratelimit/

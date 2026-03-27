@@ -1,7 +1,7 @@
 <?php
 define('STUDIO_AUTH', 1);
-require __DIR__ . '/auth/config.php';
-require __DIR__ . '/auth/session.php';
+require __DIR__ . '/../src/config.php';
+require __DIR__ . '/../src/session.php';
 
 studioSessionStart();
 ensureCsrf();
@@ -296,6 +296,6 @@ $csrf    = $_SESSION[CSRF_FIELD];
   </div>
   <?php endif; ?>
 
-  <script src="js/welcome.js" defer></script>
+  <script src="assets/js/welcome.js" defer></script>
 </body>
 </html>

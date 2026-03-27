@@ -1,0 +1,16 @@
+# PIN hash — never commit credentials
+data/pin.hash
+
+# Rate-limit state files
+data/ratelimit/
+
+# Setup script — should be deleted after use
+public/setup.php
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo

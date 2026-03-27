@@ -1,8 +1,8 @@
 <?php
 define('STUDIO_AUTH', 1);
-require __DIR__ . '/auth/config.php';
-require __DIR__ . '/auth/session.php';
-require __DIR__ . '/auth/rate_limit.php';
+require __DIR__ . '/../src/config.php';
+require __DIR__ . '/../src/session.php';
+require __DIR__ . '/../src/rate_limit.php';
 
 studioSessionStart();
 

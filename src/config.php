@@ -7,7 +7,7 @@ if (!defined('STUDIO_AUTH')) {
 // ── PIN ────────────────────────────────────────────────────────────────────
 // The PIN is stored only as a bcrypt hash — never in plaintext.
 // To set or change the PIN, run setup.php once, then delete it.
-define('PIN_HASH_FILE',     __DIR__ . '/pin.hash');
+define('PIN_HASH_FILE',     __DIR__ . '/../data/pin.hash');
 
 // ── Session ────────────────────────────────────────────────────────────────
 define('SESSION_NAME',      'studio_sid');
@@ -17,7 +17,7 @@ define('SESSION_REGEN_TTL', 900);    // rotate session ID every 15 minutes
 // ── Rate limiting ──────────────────────────────────────────────────────────
 define('MAX_ATTEMPTS',      5);
 define('LOCKOUT_SECONDS',   300);    // 5-minute lockout after MAX_ATTEMPTS failures
-define('RATE_LIMIT_DIR',    __DIR__ . '/ratelimit/');
+define('RATE_LIMIT_DIR',    __DIR__ . '/../data/ratelimit/');
 
 // ── CSRF ───────────────────────────────────────────────────────────────────
 define('CSRF_FIELD',        '_csrf');

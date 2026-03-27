@@ -1,7 +1,7 @@
 <?php
 define('STUDIO_AUTH', 1);
-require __DIR__ . '/auth/config.php';
-require __DIR__ . '/auth/session.php';
+require __DIR__ . '/../src/config.php';
+require __DIR__ . '/../src/session.php';
 
 studioSessionStart();
 ensureCsrf();
@@ -484,7 +484,7 @@ $csrf   = $_SESSION[CSRF_FIELD];
     <header>
       <h1>Welcome Screen Admin</h1>
       <div class="header-actions">
-        <a href="welcome.php" class="back-link">← Preview</a>
+        <a href="index.php" class="back-link">← Preview</a>
         <span class="theme-label" id="theme-label">Light</span>
         <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme"></button>
       </div>
@@ -540,6 +540,6 @@ $csrf   = $_SESSION[CSRF_FIELD];
 
   <?php endif; ?>
 
-  <script src="js/admin.js" defer></script>
+  <script src="assets/js/admin.js" defer></script>
 </body>
 </html>
