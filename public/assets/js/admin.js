@@ -109,6 +109,27 @@ function debouncedPreview() {
 }
 
 // ── Render card editors ────────────────────────────────────────────────────
+function makeInput(type, className, idx, value, placeholder, extra) {
+  const inp = document.createElement('input');
+  inp.type = type;
+  inp.className = className;
+  inp.dataset.i = idx;
+  inp.value = value;
+  inp.placeholder = placeholder;
+  if (extra) Object.assign(inp, extra);
+  return inp;
+}
+
+function makeField(labelText, input, fullWidth) {
+  const div = document.createElement('div');
+  div.className = 'field-group' + (fullWidth ? ' full-width' : '');
+  const lbl = document.createElement('label');
+  lbl.textContent = labelText;
+  div.appendChild(lbl);
+  div.appendChild(input);
+  return div;
+}
+
 function renderCards() {
   const n = clamp(parseInt(numCardsInput.value) || 2, MIN_CARDS, MAX_CARDS);
   while (config.cards.length < n) config.cards.push({ label: `Card ${config.cards.length + 1}`, href: '#' });
@@ -119,30 +140,37 @@ function renderCards() {
     const card = config.cards[i];
     const el = document.createElement('div');
     el.className = 'card-editor';
-    el.innerHTML = `
-      <div class="card-editor-header">
-        <span class="card-num">Card ${i + 1}</span>
-        <button class="btn-icon remove-card" data-i="${i}" title="Remove card">✕</button>
-      </div>
-      <div class="card-fields">
-        <div class="field-group full-width">
-          <label>Label</label>
-          <input type="text" class="f-label" data-i="${i}" value="${escHtml(card.label || '')}" placeholder="Card label" />
-        </div>
-        <div class="field-group full-width">
-          <label>Link (href)</label>
-          <input type="url" class="f-href" data-i="${i}" value="${escHtml(card.href || '#')}" placeholder="https://... or relative path" />
-        </div>
-        <div class="field-group">
-          <label>Width override (px, blank = global)</label>
-          <input type="number" class="f-width" data-i="${i}" value="${card.width !== undefined ? card.width : ''}" min="40" max="800" placeholder="—" />
-        </div>
-        <div class="field-group">
-          <label>Height override (px, blank = global)</label>
-          <input type="number" class="f-height" data-i="${i}" value="${card.height !== undefined ? card.height : ''}" min="30" max="600" placeholder="—" />
-        </div>
-      </div>
-    `;
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'card-editor-header';
+    const num = document.createElement('span');
+    num.className = 'card-num';
+    num.textContent = `Card ${i + 1}`;
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-icon remove-card';
+    removeBtn.dataset.i = i;
+    removeBtn.title = 'Remove card';
+    removeBtn.textContent = '✕';
+    header.appendChild(num);
+    header.appendChild(removeBtn);
+
+    // Fields container
+    const fields = document.createElement('div');
+    fields.className = 'card-fields';
+    fields.appendChild(makeField('Label',
+      makeInput('text', 'f-label', i, card.label || '', 'Card label'), true));
+    fields.appendChild(makeField('Link (href)',
+      makeInput('url', 'f-href', i, card.href || '#', 'https://... or relative path'), true));
+    fields.appendChild(makeField('Width override (px, blank = global)',
+      makeInput('number', 'f-width', i, card.width !== undefined ? card.width : '', '—',
+        { min: 40, max: 800 }), false));
+    fields.appendChild(makeField('Height override (px, blank = global)',
+      makeInput('number', 'f-height', i, card.height !== undefined ? card.height : '', '—',
+        { min: 30, max: 600 }), false));
+
+    el.appendChild(header);
+    el.appendChild(fields);
     cardsList.appendChild(el);
   }
 

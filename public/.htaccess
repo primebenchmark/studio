@@ -21,7 +21,7 @@ Options -Indexes
     Header always set X-Frame-Options "DENY"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
-    Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:"
+    # CSP is set per-page in PHP (each page has different requirements); no global CSP here.
 </IfModule>
 
 # Cache static assets (JS, CSS, images) for 1 week
@@ -38,3 +38,8 @@ Options -Indexes
 <FilesMatch "^\.">
     Require all denied
 </FilesMatch>
+
+# Block direct HTTP access to setup.php — must be run from CLI or removed post-deploy
+<Files "setup.php">
+    Require all denied
+</Files>

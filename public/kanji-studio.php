@@ -7,7 +7,10 @@ if (!isAuthenticated()) {
     header('Location: login.php');
     exit;
 }
-// Override .htaccess CSP — these tools require CDN scripts (React, Babel, JSZip) and Google Fonts
+// Override .htaccess CSP — these tools require CDN scripts (React, Babel, JSZip) and Google Fonts.
+// 'unsafe-eval' is required by @babel/standalone for in-browser JSX transpilation.
+// To eliminate it, pre-compile JSX with a build step (Vite/esbuild) and remove Babel from the page.
+// 'unsafe-inline' is required because the compiled React component is an inline <script type="text/babel">.
 header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://unpkg.com");
 ?>
 <!DOCTYPE html>
