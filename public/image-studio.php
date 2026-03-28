@@ -145,6 +145,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
     };
 
     const CACHE_KEY = "corner-rounder-prefs";
+    const THEME_KEY = "studio-theme";
 
     function loadCache() {
       try {
@@ -156,6 +157,9 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
     function saveCache(prefs) {
       try { localStorage.setItem(CACHE_KEY, JSON.stringify(prefs)); } catch {}
     }
+
+    function loadTheme() { try { return localStorage.getItem(THEME_KEY) || "dark"; } catch { return "dark"; } }
+    function saveTheme(t) { try { localStorage.setItem(THEME_KEY, t); } catch {} }
 
     function binarySearchQuality(canvas, targetBytes) {
       return new Promise((resolve) => {
@@ -205,7 +209,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
       const [roundness, setRoundness] = useState(c("roundness", 12));
       const [targetSizeKB, setTargetSizeKB] = useState(c("targetSizeKB", 500));
       const [cornerBgColor, setCornerBgColor] = useState(c("cornerBgColor", "#ffffff"));
-      const [theme, setTheme] = useState(c("theme", "dark"));
+      const [theme, setTheme] = useState(loadTheme());
       const [processing, setProcessing] = useState(false);
       const [wmText, setWmText] = useState(c("wmText", ""));
       const [wmTextPos, setWmTextPos] = useState(c("wmTextPos", "Bottom Right"));
@@ -232,6 +236,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
       // Save preferences
       useEffect(() => {
         saveCache({ roundness, targetSizeKB, cornerBgColor, theme, wmText, wmTextPos, wmTextSize, wmTextFont, wmTextColor, wmTextOpacity, wmImageUrl, wmImagePos, wmImageOpacity, wmImageScale, downloadFormat });
+        saveTheme(theme);
       }, [roundness, targetSizeKB, cornerBgColor, theme, wmText, wmTextPos, wmTextSize, wmTextFont, wmTextColor, wmTextOpacity, wmImageUrl, wmImagePos, wmImageOpacity, wmImageScale, downloadFormat]);
 
       // Load watermark image from URL on mount

@@ -1,5 +1,5 @@
 // ── Theme ──────────────────────────────────────────────────────────────────
-const THEME_KEY = 'welcome-theme';
+const THEME_KEY = 'studio-theme';
 const html = document.documentElement;
 
 function applyTheme(t) {
@@ -14,7 +14,7 @@ document.getElementById('theme-toggle').addEventListener('click', () => {
   applyTheme(next);
 });
 
-const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) || 'light'; } catch { return 'light'; } })();
+const savedTheme = (() => { try { return localStorage.getItem(THEME_KEY) || 'dark'; } catch { return 'dark'; } })();
 applyTheme(savedTheme);
 
 // ── URL sanitization ───────────────────────────────────────────────────────

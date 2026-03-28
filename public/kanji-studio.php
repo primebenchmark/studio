@@ -503,6 +503,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
     };
 
     const CACHE_KEY = "kanji-studio-prefs";
+    const THEME_KEY = "studio-theme";
 
     function loadCache() {
       try {
@@ -513,6 +514,14 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
 
     function saveCache(prefs) {
       try { localStorage.setItem(CACHE_KEY, JSON.stringify(prefs)); } catch {}
+    }
+
+    function loadTheme() {
+      try { return localStorage.getItem(THEME_KEY) || "dark"; } catch { return "dark"; }
+    }
+
+    function saveTheme(t) {
+      try { localStorage.setItem(THEME_KEY, t); } catch {}
     }
 
     function KanjiGenerator() {
@@ -533,7 +542,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
       const [generating, setGenerating] = useState(false);
       const [selectedPreset, setSelectedPreset] = useState(c("selectedPreset", 0));
       const [presetType, setPresetType] = useState(c("presetType", "solid"));
-      const [theme, setTheme] = useState(c("theme", "dark"));
+      const [theme, setTheme] = useState(loadTheme());
       const [fontPage, setFontPage] = useState(0);
       const [wmText, setWmText] = useState(c("wmText", "Prime Benchmark Private Limited"));
       const [wmTextPos, setWmTextPos] = useState(c("wmTextPos", "Bottom Center"));
@@ -559,6 +568,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
           wmImage, wmImageUrl, wmImagePos, wmImageOpacity, wmImageScale,
           aspectRatioEnabled, aspectRatioW, aspectRatioH, serialInFilename,
         });
+        saveTheme(theme);
       }, [text, fontSize, padding, bgColor, fgColor, fontIndex, bold, roundness, scale,
           selectedPreset, presetType, theme, wmText, wmTextPos, wmTextSize, wmTextFont, wmTextColor, wmTextOpacity,
           wmImage, wmImageUrl, wmImagePos, wmImageOpacity, wmImageScale,

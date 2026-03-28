@@ -344,8 +344,11 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
     };
 
     const CACHE_KEY = "collage-studio-prefs";
+    const THEME_KEY = "studio-theme";
     function loadCache() { try { const r = localStorage.getItem(CACHE_KEY); return r ? JSON.parse(r) : {}; } catch { return {}; } }
     function saveCache(p) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(p)); } catch {} }
+    function loadTheme() { try { return localStorage.getItem(THEME_KEY) || "dark"; } catch { return "dark"; } }
+    function saveTheme(t) { try { localStorage.setItem(THEME_KEY, t); } catch {} }
 
     function GradientEditor({ gradient, onChange, t }) {
       const addStop = () => onChange({ ...gradient, stops: [...gradient.stops, { color: "#ffffff", pos: 100 }] });
@@ -556,7 +559,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
       const cached = React.useMemo(() => loadCache(), []);
       const c = (k, fb) => cached[k] !== undefined ? cached[k] : fb;
 
-      const [theme, setTheme] = useState(c("theme", "dark"));
+      const [theme, setTheme] = useState(loadTheme());
       const [aspectPreset, setAspectPreset] = useState(c("aspectPreset", 0));
       const [customW, setCustomW] = useState(c("customW", 4));
       const [customH, setCustomH] = useState(c("customH", 3));
@@ -606,6 +609,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-i
 
       useEffect(() => {
         saveCache({ theme, aspectPreset, customW, customH, cols, rows, outerPad, innerGap, bgRadius, cardRadius, bgType, bgColor, bgGradient, exportScale, labelEnabled, labelStyle, labelPos, labelTone, labelBgEnabled, labelBgShape, labelBgColor, labelBgOpacity, labelSize, labelBgSize, wmText, wmTextPos, wmTextSize, wmTextFont, wmTextColor, wmTextOpacity, wmImage, wmImageUrl, wmImagePos, wmImageOpacity, wmImageScale });
+        saveTheme(theme);
       }, [theme, aspectPreset, customW, customH, cols, rows, outerPad, innerGap, bgRadius, cardRadius, bgType, bgColor, bgGradient, exportScale, labelEnabled, labelStyle, labelPos, labelTone, labelBgEnabled, labelBgShape, labelBgColor, labelBgOpacity, labelSize, labelBgSize, wmText, wmTextPos, wmTextSize, wmTextFont, wmTextColor, wmTextOpacity, wmImage, wmImageUrl, wmImagePos, wmImageOpacity, wmImageScale]);
 
       const preset = ASPECT_RATIOS[aspectPreset];

@@ -21,6 +21,9 @@ $csrf   = $_SESSION[CSRF_FIELD];
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Admin Panel</title>
   <meta name="csrf-token" content="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>" />
+  <script>
+    (function(){try{var t=localStorage.getItem('studio-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 

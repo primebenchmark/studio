@@ -26,10 +26,10 @@ function applyTheme(t) {
 if (themeToggle) themeToggle.addEventListener('click', () => {
   const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   applyTheme(next);
-  try { localStorage.setItem('admin-theme', next); } catch {}
+  try { localStorage.setItem('studio-theme', next); } catch {}
 });
 
-const savedAdminTheme = (() => { try { return localStorage.getItem('admin-theme') || 'light'; } catch { return 'light'; } })();
+const savedAdminTheme = (() => { try { return localStorage.getItem('studio-theme') || 'dark'; } catch { return 'dark'; } })();
 applyTheme(savedAdminTheme);
 
 // ── Load/Save config ───────────────────────────────────────────────────────
