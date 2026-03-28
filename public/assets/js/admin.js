@@ -290,7 +290,7 @@ document.getElementById('btn-reset').addEventListener('click', async () => {
     pinPad.style.pointerEvents = 'none';
 
     try {
-      const res = await fetch('login.php', {
+      const res = await fetch('admin-auth.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',

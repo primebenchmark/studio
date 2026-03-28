@@ -21,7 +21,7 @@ define('SESSION_REGEN_TTL', 900);    // rotate session ID every 15 minutes
 
 // ── Rate limiting ──────────────────────────────────────────────────────────
 define('MAX_ATTEMPTS',      5);
-define('LOCKOUT_SECONDS',   300);    // 5-minute lockout after MAX_ATTEMPTS failures
+define('LOCKOUT_SECONDS',   3600);   // 1-hour lockout after MAX_ATTEMPTS failures
 define('RATE_LIMIT_DIR',    __DIR__ . '/../studio_data/ratelimit/');
 
 // ── CSRF ───────────────────────────────────────────────────────────────────

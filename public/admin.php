@@ -4,6 +4,12 @@ require __DIR__ . '/../studio_src/config.php';
 require __DIR__ . '/../studio_src/session.php';
 
 studioSessionStart();
+
+if (!isAuthenticated()) {
+    header('Location: index.php');
+    exit;
+}
+
 ensureCsrf();
 
 header('X-Frame-Options: DENY');
@@ -11,8 +17,8 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: same-origin');
 header('Cache-Control: no-store, no-cache, must-revalidate');
 
-$authed = isAuthenticated();
-$csrf   = $_SESSION[CSRF_FIELD];
+$adminAuthed = !empty($_SESSION['admin_authed']);
+$csrf = $_SESSION[CSRF_FIELD];
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -475,18 +481,19 @@ $csrf   = $_SESSION[CSRF_FIELD];
       80%       { transform: translateX(6px); }
     }
     .shake { animation: shake 0.35s ease; }
+
   </style>
 </head>
 <body>
-  <!-- Theme toggle — always in DOM so JS can find it regardless of auth state -->
+  <!-- Theme toggle -->
   <div class="page-controls">
     <button class="theme-toggle" id="theme-toggle" title="Toggle theme" aria-label="Toggle theme">🌙</button>
   </div>
 
-  <!-- PIN OVERLAY — hidden server-side when already authenticated -->
-  <div id="pin-overlay"<?= $authed ? ' class="hidden"' : '' ?>>
+  <!-- PIN OVERLAY — shown when admin re-auth is required -->
+  <div id="pin-overlay"<?= $adminAuthed ? ' class="hidden"' : '' ?>>
     <div id="pin-screen">
-      <h2>Enter PIN</h2>
+      <h2>Re-enter PIN</h2>
       <div class="pin-dots" id="pin-dots">
         <div class="pin-dot" id="d0"></div>
         <div class="pin-dot" id="d1"></div>
@@ -511,7 +518,7 @@ $csrf   = $_SESSION[CSRF_FIELD];
     </div>
   </div>
 
-  <?php if ($authed): ?>
+  <?php if ($adminAuthed): ?>
   <div class="container">
     <header>
       <h1>Welcome Screen Admin</h1>
@@ -592,10 +599,10 @@ $csrf   = $_SESSION[CSRF_FIELD];
       </div>
     </div>
   </div>
-
   <?php endif; ?>
 
   <script src="assets/js/admin.js" defer></script>
+  <?php if ($adminAuthed): ?>
   <script>
     document.getElementById('logout-btn')?.addEventListener('click', async () => {
       const csrf = document.querySelector('meta[name="csrf-token"]').content;
@@ -657,5 +664,6 @@ $csrf   = $_SESSION[CSRF_FIELD];
       }
     });
   </script>
+  <?php endif; ?>
 </body>
 </html>
