@@ -7,6 +7,7 @@ if (!isAuthenticated()) {
     header('Location: login.php');
     exit;
 }
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://unpkg.com");
 ?>
 <!DOCTYPE html>
 <html lang="en">

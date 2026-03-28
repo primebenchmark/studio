@@ -1,17 +1,17 @@
-const STORAGE_KEY = 'welcome-config';
+const STORAGE_KEY = 'welcome-config-v2';
 
 const DEFAULT_CARDS = [
-  { label: 'Kanji Studio', href: '#' },
-  { label: 'Image Studio', href: 'index.html' },
+  { label: 'Kanji Studio', href: 'kanji-studio.php' },
+  { label: 'Image Studio', href: 'image-studio.php' },
+  { label: 'Collage Studio', href: 'collage-studio.php' },
 ];
 
 const DEFAULTS = {
-  numCards: 2,
+  numCards: 3,
   layout: 'column',
   cardWidth: 260,
   cardHeight: 120,
   cards: DEFAULT_CARDS,
-  theme: 'light',
 };
 
 // ── Theme ──────────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ const savedAdminTheme = (() => { try { return localStorage.getItem('admin-theme'
 applyTheme(savedAdminTheme);
 
 // ── Load/Save config ───────────────────────────────────────────────────────
-function loadConfig() {
+function loadConfigLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
@@ -41,8 +41,33 @@ function loadConfig() {
   return { ...DEFAULTS, cards: DEFAULT_CARDS.map(c => ({ ...c })) };
 }
 
-function saveConfig(cfg) {
+async function loadConfigFromServer() {
+  try {
+    const res = await fetch('config-api.php', { credentials: 'same-origin' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && data.config) return { ...DEFAULTS, ...data.config };
+    }
+  } catch {}
+  return null;
+}
+
+function getCsrf() {
+  return document.querySelector('meta[name="csrf-token"]').content;
+}
+
+async function saveConfig(cfg) {
+  // Save to localStorage as fallback
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg)); } catch {}
+  // Save to server
+  try {
+    await fetch('config-api.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ csrf: getCsrf(), config: cfg }),
+    });
+  } catch {}
 }
 
 // ── DOM refs ───────────────────────────────────────────────────────────────
@@ -54,7 +79,7 @@ const cardsList      = document.getElementById('cards-list');
 const previewStrip   = document.getElementById('preview-strip');
 const saveBadge      = document.getElementById('save-badge');
 
-let config = loadConfig();
+let config = loadConfigLocal();
 
 function clamp(val, min, max) { return Math.min(max, Math.max(min, val)); }
 
@@ -69,16 +94,23 @@ function sanitizeUrl(url) {
   return s;
 }
 
+// ── Constants ─────────────────────────────────────────────────────────────
+const DEBOUNCE_MS     = 60;
+const PREVIEW_SCALE   = 0.55;
+const MIN_CARDS       = 1;
+const MAX_CARDS       = 12;
+const SAVE_BADGE_MS   = 2200;
+
 // Debounce helper to avoid excessive DOM updates during rapid typing
 let _previewTimer = null;
 function debouncedPreview() {
   clearTimeout(_previewTimer);
-  _previewTimer = setTimeout(updatePreview, 60);
+  _previewTimer = setTimeout(updatePreview, DEBOUNCE_MS);
 }
 
 // ── Render card editors ────────────────────────────────────────────────────
 function renderCards() {
-  const n = clamp(parseInt(numCardsInput.value) || 2, 1, 12);
+  const n = clamp(parseInt(numCardsInput.value) || 2, MIN_CARDS, MAX_CARDS);
   while (config.cards.length < n) config.cards.push({ label: `Card ${config.cards.length + 1}`, href: '#' });
   config.cards = config.cards.slice(0, n);
 
@@ -127,7 +159,7 @@ function updatePreview() {
   previewStrip.style.flexWrap = layout.startsWith('grid') ? 'wrap' : 'nowrap';
 
   previewStrip.innerHTML = '';
-  const scale = 0.55;
+  const scale = PREVIEW_SCALE;
   const frag = document.createDocumentFragment();
   config.cards.forEach(card => {
     const cw = (card.width || w) * scale;
@@ -192,24 +224,29 @@ layoutSelect.addEventListener('change', () => { config.layout = layoutSelect.val
 cardWidthInput.addEventListener('input', () => { config.cardWidth = parseInt(cardWidthInput.value) || 260; debouncedPreview(); });
 cardHeightInput.addEventListener('input', () => { config.cardHeight = parseInt(cardHeightInput.value) || 120; debouncedPreview(); });
 
-document.getElementById('btn-save').addEventListener('click', () => {
+document.getElementById('btn-save').addEventListener('click', async () => {
   config.numCards   = parseInt(numCardsInput.value) || 2;
   config.layout     = layoutSelect.value;
   config.cardWidth  = parseInt(cardWidthInput.value) || 260;
   config.cardHeight = parseInt(cardHeightInput.value) || 120;
-  saveConfig(config);
+  await saveConfig(config);
   saveBadge.classList.add('visible');
-  setTimeout(() => saveBadge.classList.remove('visible'), 2200);
+  setTimeout(() => saveBadge.classList.remove('visible'), SAVE_BADGE_MS);
 });
 
-document.getElementById('btn-reset').addEventListener('click', () => {
+document.getElementById('btn-reset').addEventListener('click', async () => {
   if (!confirm('Reset all welcome screen settings to defaults?')) return;
   config = { ...DEFAULTS, cards: DEFAULT_CARDS.map(c => ({ ...c })) };
-  saveConfig(config);
+  await saveConfig(config);
   populate();
 });
 
-populate();
+// Load from server, then populate
+(async function init() {
+  const serverCfg = await loadConfigFromServer();
+  if (serverCfg) config = serverCfg;
+  populate();
+})();
 
 } // end if (cardsList)
 

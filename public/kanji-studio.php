@@ -7,6 +7,8 @@ if (!isAuthenticated()) {
     header('Location: login.php');
     exit;
 }
+// Override .htaccess CSP — these tools require CDN scripts (React, Babel, JSZip) and Google Fonts
+header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://unpkg.com");
 ?>
 <!DOCTYPE html>
 <html lang="en">

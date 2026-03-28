@@ -40,7 +40,7 @@ const DEFAULTS = {
   cards: DEFAULT_CARDS,
 };
 
-function loadConfig() {
+function loadConfigLocal() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
@@ -48,8 +48,7 @@ function loadConfig() {
   return { ...DEFAULTS };
 }
 
-function buildCards() {
-  const cfg = loadConfig();
+function buildCards(cfg) {
   const container = document.getElementById('cards-container');
   if (!container) return;
   container.innerHTML = '';
@@ -92,7 +91,18 @@ function buildCards() {
   container.appendChild(frag);
 }
 
-buildCards();
+// Load config from server, fall back to localStorage
+(async function initCards() {
+  let cfg = loadConfigLocal();
+  try {
+    const res = await fetch('config-api.php', { credentials: 'same-origin' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.ok && data.config) cfg = { ...DEFAULTS, ...data.config };
+    }
+  } catch {}
+  buildCards(cfg);
+})();
 
 // ── PIN ── (server-side validation via fetch) ──────────────────────────────
 const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;

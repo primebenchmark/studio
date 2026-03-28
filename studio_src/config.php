@@ -4,6 +4,11 @@ if (!defined('STUDIO_AUTH')) {
     exit('No direct access.');
 }
 
+// ── Error reporting ──────────────────────────────────────────────────────
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
 // ── PIN ────────────────────────────────────────────────────────────────────
 // The PIN is stored only as a bcrypt hash — never in plaintext.
 // To set or change the PIN, run setup.php once, then delete it.

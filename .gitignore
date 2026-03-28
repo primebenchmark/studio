@@ -4,6 +4,13 @@ data/pin.hash
 # Rate-limit state files
 data/ratelimit/
 
+# User card configuration
+data/config.json
+
+# Audit log
+data/audit.log
+data/audit.log.1
+
 # Setup script — should be deleted after use
 public/setup.php
 

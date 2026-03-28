@@ -3,6 +3,7 @@ define('STUDIO_AUTH', 1);
 require __DIR__ . '/../studio_src/config.php';
 require __DIR__ . '/../studio_src/session.php';
 require __DIR__ . '/../studio_src/rate_limit.php';
+require __DIR__ . '/../studio_src/audit_log.php';
 
 studioSessionStart();
 
@@ -45,6 +46,7 @@ rlCleanup(); // opportunistic stale-file cleanup
 
 $lockedFor = rlLockedFor($ip);
 if ($lockedFor > 0) {
+    auditLog('login_locked', $ip, "retry_after={$lockedFor}s");
     http_response_code(429);
     header('Retry-After: ' . $lockedFor);
     echo json_encode(['ok' => false, 'error' => 'locked', 'retry_after' => $lockedFor]);
@@ -62,6 +64,7 @@ if (!preg_match('/^\d{4,8}$/', $pin)) {
 // ── Verify PIN against stored hash ─────────────────────────────────────────
 if (password_verify($pin, getPinHash())) {
     // Success: clear failures, regenerate session, issue auth flag
+    auditLog('login_ok', $ip);
     rlReset($ip);
     session_regenerate_id(true);
     $_SESSION['authenticated'] = true;
@@ -72,9 +75,11 @@ if (password_verify($pin, getPinHash())) {
 
     echo json_encode(['ok' => true]);
 } else {
+    auditLog('login_fail', $ip);
     rlRecordFailure($ip);
     $remaining = rlLockedFor($ip);
     if ($remaining > 0) {
+        auditLog('lockout', $ip, "locked for {$remaining}s");
         http_response_code(429);
         header('Retry-After: ' . $remaining);
         echo json_encode(['ok' => false, 'error' => 'locked', 'retry_after' => $remaining]);

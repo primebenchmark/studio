@@ -198,6 +198,7 @@ $csrf   = $_SESSION[CSRF_FIELD];
     }
 
     .form-row input[type="number"],
+    .form-row input[type="password"],
     .form-row select {
       flex: 1;
       height: 36px;
@@ -211,6 +212,7 @@ $csrf   = $_SESSION[CSRF_FIELD];
       transition: border-color 0.15s;
     }
     .form-row input[type="number"]:focus,
+    .form-row input[type="password"]:focus,
     .form-row select:focus {
       border-color: var(--input-focus);
     }
@@ -565,6 +567,27 @@ $csrf   = $_SESSION[CSRF_FIELD];
         <button class="btn-primary" id="btn-save">Save changes</button>
       </div>
     </div>
+
+    <!-- Change PIN -->
+    <div class="panel">
+      <div class="panel-title">Change PIN</div>
+      <div class="form-row">
+        <label for="current-pin">Current PIN</label>
+        <input type="password" id="current-pin" inputmode="numeric" pattern="\d{4,8}" maxlength="8" autocomplete="current-password" />
+      </div>
+      <div class="form-row">
+        <label for="new-pin">New PIN (4–8 digits)</label>
+        <input type="password" id="new-pin" inputmode="numeric" pattern="\d{4,8}" maxlength="8" autocomplete="new-password" />
+      </div>
+      <div class="form-row">
+        <label for="confirm-pin">Confirm new PIN</label>
+        <input type="password" id="confirm-pin" inputmode="numeric" pattern="\d{4,8}" maxlength="8" autocomplete="new-password" />
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:8px;">
+        <button class="btn-primary" id="btn-change-pin">Change PIN</button>
+        <span class="pin-change-msg" id="pin-change-msg" style="font-size:13px;min-height:18px;"></span>
+      </div>
+    </div>
   </div>
 
   <?php endif; ?>
@@ -579,6 +602,56 @@ $csrf   = $_SESSION[CSRF_FIELD];
         body: JSON.stringify({ csrf })
       });
       location.href = 'index.php';
+    });
+
+    document.getElementById('btn-change-pin')?.addEventListener('click', async () => {
+      const msg = document.getElementById('pin-change-msg');
+      const currentPin = document.getElementById('current-pin').value;
+      const newPin = document.getElementById('new-pin').value;
+      const confirmPin = document.getElementById('confirm-pin').value;
+
+      if (!/^\d{4,8}$/.test(newPin)) {
+        msg.style.color = 'var(--danger)';
+        msg.textContent = 'PIN must be 4–8 digits.';
+        return;
+      }
+      if (newPin !== confirmPin) {
+        msg.style.color = 'var(--danger)';
+        msg.textContent = 'New PINs do not match.';
+        return;
+      }
+
+      const csrf = document.querySelector('meta[name="csrf-token"]').content;
+      try {
+        const res = await fetch('change-pin.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ csrf, current_pin: currentPin, new_pin: newPin, confirm_pin: confirmPin })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          msg.style.color = 'var(--accent)';
+          msg.textContent = 'PIN changed successfully.';
+          // Update CSRF token if rotated
+          if (data.csrf) document.querySelector('meta[name="csrf-token"]').content = data.csrf;
+          document.getElementById('current-pin').value = '';
+          document.getElementById('new-pin').value = '';
+          document.getElementById('confirm-pin').value = '';
+        } else {
+          msg.style.color = 'var(--danger)';
+          const errors = {
+            wrong_current_pin: 'Current PIN is incorrect.',
+            invalid_new_pin: 'New PIN must be 4–8 digits.',
+            pins_dont_match: 'New PINs do not match.',
+            locked: 'Too many attempts. Try again later.',
+          };
+          msg.textContent = errors[data.error] || 'Failed to change PIN.';
+        }
+      } catch {
+        msg.style.color = 'var(--danger)';
+        msg.textContent = 'Connection error.';
+      }
     });
   </script>
 </body>
