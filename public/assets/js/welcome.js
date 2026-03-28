@@ -94,13 +94,16 @@ function buildCards(cfg) {
 // Load config from server, fall back to localStorage
 (async function initCards() {
   let cfg = loadConfigLocal();
-  try {
-    const res = await fetch('config-api.php', { credentials: 'same-origin' });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.ok && data.config) cfg = { ...DEFAULTS, ...data.config };
-    }
-  } catch {}
+  const authed = document.querySelector('meta[name="csrf-token"]')?.dataset?.authed === '1';
+  if (authed) {
+    try {
+      const res = await fetch('config-api.php', { credentials: 'same-origin' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.config) cfg = { ...DEFAULTS, ...data.config };
+      }
+    } catch {}
+  }
   buildCards(cfg);
 })();
 

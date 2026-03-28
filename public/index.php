@@ -20,7 +20,7 @@ $csrf    = $_SESSION[CSRF_FIELD];
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Studio</title>
-  <meta name="csrf-token" content="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>" />
+  <meta name="csrf-token" content="<?= htmlspecialchars($csrf, ENT_QUOTES) ?>" data-authed="<?= $authed ? '1' : '0' ?>" />
   <script>
     (function(){try{var t=localStorage.getItem('studio-theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(e){}})();
   </script>
